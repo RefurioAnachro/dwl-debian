@@ -61,15 +61,8 @@ RUN cd /src/wayland \
  && meson -Dtests=false -Ddocumentation=false -Ddtd_validation=false build \
  && ninja -C build -j4 install
 
-RUN cd /src && git clone https://git.sr.ht/~kennylevinsen/seatd --depth 1 --branch=0.6.3
-RUN cd /src/seatd \
- && meson build \
- && ninja -C build -j4 install
-
 #RUN apt-get install -y libdrm-dev
 # need libdrm >=2.4.109 but debian has merely >=2.4.104
-
-RUN apt-get install -y 
 
 # libkms=auto
 # intel=auto
@@ -94,6 +87,20 @@ RUN cd /src/drm \
  && meson -Dman-pages=false build \
  && ninja -C build -j4 install
 
+# libseat-logind=auto # needs libelogind0 or libsystemd-dev (untested)
+# libseat-seatd=enabled
+# libseat-builtin=disabled
+# server=enabled
+# examples=disabled
+# man-pages=auto # needs scdoc
+# defaultpath=
+RUN cd /src && git clone https://git.sr.ht/~kennylevinsen/seatd --depth 1 --branch=0.6.3
+RUN cd /src/seatd \
+ && meson build \
+ && ninja -C build -j4 install
+# libelogind found: NO
+# libsystemd found: NO
+
 # xcb-errors=auto
 # xwayland=auto
 # examples=true
@@ -105,35 +112,10 @@ RUN cd /src/wlroots \
  && meson build \
  && ninja -C build -j4 install
 
-# Package xcb was not found
-
 RUN cd /src && git clone https://github.com/djpohly/dwl.git --depth 1 --branch=v0.2.2
 RUN cd /src/dwl \
  && cp config.def.h config.h \
  && make
-
-# dependencies according to https://gitlab.freedesktop.org/wlroots/wlroots
-
-# meson
-# wayland
-# wayland-protocols
-# EGL and GLESv2 (optional, for the GLES2 renderer)
-# Vulkan loader, headers and glslang (optional, for the Vulkan renderer)
-# libdrm
-# GBM
-# libinput (optional, for the libinput backend)
-# xkbcommon
-# udev
-# pixman
-# libseat https://git.sr.ht/~kennylevinsen/seatd
-
-# If you choose to enable X11 support:
-
-# xwayland (build-time only, optional at runtime)
-# libxcb
-# libxcb-render-util
-# libxcb-wm
-# libxcb-errors (optional, for improved error reporting)
 
 COPY run.sh /run.sh
 RUN chmod 755 /run.sh
