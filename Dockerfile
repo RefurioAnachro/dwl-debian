@@ -12,13 +12,25 @@ RUN apt-get install -y \
     gcc \
     git \
     libc6-dev \
+    libcairo2-dev \
     libevdev-dev \
     libgbm-dev \
     libmtdev-dev \
+    libpam0g-dev \
+    libpango1.0-dev \
     libpciaccess-dev \
     libpixman-1-dev \
     libudev-dev \
     libwacom-dev \
+    libx11-xcb-dev \
+    libxcb-composite0-dev \
+    libxcb-dri3-dev \
+    libxcb-present-dev \
+    libxcb-render-util0-dev \
+    libxcb-shm0-dev \
+    libxcb-xinput-dev \
+    libxcb1-dev \
+    libxcursor-dev
     libxkbcommon-dev \
     pkg-config \
     python3-pip \
@@ -101,6 +113,71 @@ RUN cd /src/seatd \
 # libelogind found: NO
 # libsystemd found: NO
 
+# backend-drm=true
+# backend-drm-screencast-vaapi=true
+# backend-headless=true
+# backend-rdp=true
+# screenshare=true
+# backend-wayland=true
+# backend-x11=true
+# backend-fbdev=true
+# backend-default=combo # [ 'auto', 'drm', 'wayland', 'x11', 'fbdev', 'headless' ]
+# renderer-gl=true
+# weston-launch=true
+# xwayland=true
+# xwayland-path=
+# systemd=true
+# remoting=true
+# pipewire=true
+# shell-desktop=true
+# shell-fullscreen=true
+# shell-ivi=true
+# shell-kiosk=true
+# desktop-shell-client-default=weston-desktop-shell
+# deprecated-wl-shell=false
+# color-management-lcms=true
+# color-management-colord=true
+# launcher-logind=true
+# launcher-libseat=false # not yet supported in version 9.0
+# image-jpeg=true
+# image-webp=true
+# tools=
+# demo-clients=true
+# simple-clients=all # [ 'all', 'damage', 'im', 'egl', 'shm', 'touch', 'dmabuf-feedback', 'dmabuf-v4l', 'dmabuf-egl' ] # ,dmabuf-feedback not supported in version 9.0
+# resize-pool=true
+# wcap-decode=true
+# test-junit-xml=true
+# test-skip-is-failure=false
+# test-gl-renderer=true
+# doc=false
+RUN cd /src && git clone https://gitlab.freedesktop.org/wayland/weston.git --depth 1 --branch=9.0
+RUN cd /src/weston \
+ && meson \
+    -Dimage-jpeg=false \
+    -Dimage-webp=false \
+    -Drenderer-gl=false \
+    -Dlauncher-logind=false \
+    -Dbackend-drm-screencast-vaapi=false \
+    -Dbackend-drm=false \
+    -Dbackend-default=x11 \
+    -Dbackend-rdp=false \
+    -Dcolor-management-lcms=false \
+    -Dcolor-management-colord=false \
+    -Dsystemd=false \
+    -Dremoting=false \
+    -Dpipewire=false \
+    -Dsimple-clients=damage,im,shm,touch,dmabuf-v4l \
+    -Ddemo-clients=false \
+    -Dtest-junit-xml=false \
+    -Dxwayland=true \
+    build \
+ && ninja -C build -j4 install
+# libsystemd-dev # or -Dlauncher-logind=false -Dsystemd=false
+# freerdp2-dev # or -Dbackend-rdp=false
+# liblcms2-dev # or -Dcolor-management-lcms=false  -Dcolor-management-colord=false
+# drm and gl renderer # or -Dremoting=false
+# egl # or -Ddemo-clients=false
+
 # xcb-errors=auto
 # xwayland=auto
 # examples=true
@@ -110,11 +187,14 @@ RUN cd /src/seatd \
 RUN cd /src && git clone https://gitlab.freedesktop.org/wlroots/wlroots.git --depth 1 --branch=0.15.0
 RUN cd /src/wlroots \
  && meson build \
+    -Dxwayland=enabled \
  && ninja -C build -j4 install
 
 RUN cd /src && git clone https://github.com/djpohly/dwl.git --depth 1 --branch=v0.2.2
 RUN cd /src/dwl \
  && cp config.def.h config.h \
+ && echo CFLAGS += -DXWAYLAND >> config.mk \
+ && echo CFLAGS += -I/src/wlroots/include >> config.mk \
  && make
 
 COPY run.sh /run.sh
