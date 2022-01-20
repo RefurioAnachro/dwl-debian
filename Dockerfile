@@ -30,7 +30,7 @@ RUN apt-get install -y \
     libxcb-shm0-dev \
     libxcb-xinput-dev \
     libxcb1-dev \
-    libxcursor-dev
+    libxcursor-dev \
     libxkbcommon-dev \
     pkg-config \
     python3-pip \
