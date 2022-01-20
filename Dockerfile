@@ -107,7 +107,7 @@ RUN cd /src/wlroots \
 
 # Package xcb was not found
 
-RUN cd /src && git clone https://github.com/djpohly/dwl.git
+RUN cd /src && git clone https://github.com/djpohly/dwl.git --depth 1 --branch=v0.2.2
 RUN cd /src/dwl \
  && cp config.def.h config.h \
  && make
@@ -135,4 +135,5 @@ RUN cd /src/dwl \
 # libxcb-wm
 # libxcb-errors (optional, for improved error reporting)
 
-ENV XDG_RUNTIME_DIR=/tmp
+COPY run.sh /run.sh
+RUN chmod 755 /run.sh
